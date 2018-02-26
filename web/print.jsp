@@ -1,44 +1,57 @@
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/sql" prefix="sql" %>
 <html>
 <head>
-	<title>Visitor Pass</title>
-	<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
-	<!--<link href="css/style.css" rel="stylesheet" type="text/css" />-->
-	<style>
-		#ctr{
-			
-		}
-		#left {
-			width: 49%;			
-			float: left;
-			border-radius: 10px; border: 1px solid black;
-		}
-		#right {
-			width: 49%;			
-			float: right;
-			border-radius: 10px;
-			border: 1px solid black;
-			/*padding-left: 25px;
-			border-width: 1px; border-style: solid; border-color: red;*/ 
-		}
-		* {
-			font-family: Verdana, Geneva, sans-serif;
-			font-size: 12px;
-		}
-		.row {
-		  display: flex; /* equal height of the children */
-		}
+    <title>Visitor Pass</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+    <!--<link href="css/style.css" rel="stylesheet" type="text/css" />-->
+    <style>
+            #ctr{
 
-		.col {
-		  flex: 1; /* additionally, equal width */
-		  padding: 2px;
-		}
-	</style>
+            }
+            #left {
+                    width: 49%;			
+                    float: left;
+                    border-radius: 10px; border: 1px solid black;
+            }
+            #right {
+                    width: 49%;			
+                    float: right;
+                    border-radius: 10px;
+                    border: 1px solid black;
+                    /*padding-left: 25px;
+                    border-width: 1px; border-style: solid; border-color: red;*/ 
+            }
+            * {
+                    font-family: Verdana, Geneva, sans-serif;
+                    font-size: 12px;
+            }
+            .row {
+              display: flex; /* equal height of the children */
+            }
+
+            .col {
+              flex: 1; /* additionally, equal width */
+              padding: 2px;
+            }
+    </style>
 </head>
 <body>
 <c:choose>
 	<c:when test="${not empty sessionScope.login}">
-	
+            <c:choose>
+                <c:when test="${not empty param.slno}">
+                    <sql:query var="rs1" dataSource="jdbc/test">
+                            SELECT * FROM visitorpass WHERE VP_TSTM = ?
+                            <sql:param value="${param.slno}"/>
+                    </sql:query>
+                </c:when>
+                <c:otherwise>
+                    <sql:query var="rs1" dataSource="jdbc/test">
+                            SELECT * FROM visitorpass WHERE VP_TSTM = (SELECT MAX(VP_TSTM) FROM visitorpass)
+                    </sql:query>
+                </c:otherwise>
+            </c:choose>
 	<div align="center" id="ctr" class="row">
 			<div id="left" class="col">
 				<table>
@@ -53,7 +66,7 @@
 						</td>
 					</tr>			
 				</table>
-				<b><u>VISITOR PASS</u></b>	
+				<b><u>VISITOR PASS</u></b>
 				<table>
 					<col width='35%'>
 					<col width='65%'>
@@ -61,11 +74,13 @@
 						<td>
 						<table>
 							<tr>
-								<td><img width='120' height='120' src='http://10.100.1.45/visitorpass/${param.id}'/></td>
-								<td><b>${param.firstname}</b><br/><b>${param.desg}</b><br/><b>${param.comingfrom}</b><br/>Area of Visit: <b>${param.va}</b><br/>Valid From: <b>${param.vf}</b><br/>Valid Upto: <b>${param.vt}</b><br/>ID: <b>${param.id}</b></td>
+								<td><img width='120' height='120' src='${rs1.rows[0].VP_PHTO}'/></td>
+								<td><b>${rs1.rows[0].VP_NAME}</b><br/><b>${rs1.rows[0].VP_DESG}</b><br/><b>${rs1.rows[0].VP_FROM}</b>
+                                                                    <br/>Area of Visit: <b>${rs1.rows[0].VP_VTAR}</b><br/>Valid From: <b>${rs1.rows[0].VP_VDFM}</b>
+                                                                    <br/>Valid Upto: <b>${rs1.rows[0].VP_VDTO}</b><br/>ID: <b>${rs1.rows[0].VP_SLNO}</b></td>
 							</tr>
 							<!--<tr><td colspan='2'>Vehicle No: ${param.veh}<br/>Laptop: ${param.lm} &nbsp; ${param.lsn}<br/>Mobile: ${param.mh} &nbsp; ${param.mobileno}</td></tr>-->
-							<tr><td colspan='2'>Check In Time: <u>${param.chkin}</u> </td></tr>
+							<tr><td colspan='2'>Check In Time: <u>${rs1.rows[0].VP_TSTM}</u> </td></tr>
 							<tr>
 								<td colspan='2'><br/><div>I will abide by all the rules and regulations of BHEL <br/><br/>
 														&nbsp;<br/>
